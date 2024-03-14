@@ -98,7 +98,7 @@ export default function Home() {
     clearCanvas();
 
     const r = 150; // Radius
-    const degs = [40, 80, 120, 160, 200, 240, 280, 320, 360]; // Degrees for labeling
+    const degs = [0, 40, 80, 120, 160, 200, 240, 280, 320, 360]; // Degrees for labeling
     const theta = degs.map((deg) => (2 * Math.PI * deg) / 360); // Convert degrees to radians
 
     // Plot points
@@ -112,35 +112,36 @@ export default function Home() {
     drawCircle(r);
 
     // Plot lines between numbers based on the provided order
-    for (let i = 0; i < order.length - 1; i++) {
-      const fromIndex = parseInt(order[i]) - 1;
-      const toIndex = parseInt(order[i + 1]) - 1;
-
-      if (order[i] === "0") {
-        // If the current number is zero, connect it to the center
+    let prevIndex = -1;
+    for (let i = 0; i < order.length; i++) {
+      const currentIndex = parseInt(order[i]);
+      if (currentIndex === parseInt(order[i - 1])) {
+        continue;
+      }
+      if (currentIndex === 0) {
+        // Draw line from previous point to center
         connectPoints(
-          0,
-          0,
-          r * Math.sin(theta[toIndex]),
-          r * Math.cos(theta[toIndex])
-        );
-      } else if (order[i] === "2" && order[i + 1] === "0") {
-        // If the current number is 2 and the next number is zero
-        connectPoints(
-          r * Math.sin(theta[fromIndex]),
-          r * Math.cos(theta[fromIndex]),
+          r * Math.sin(theta[prevIndex]),
+          r * Math.cos(theta[prevIndex]),
           0,
           0
         );
-      } else {
-        // Otherwise, connect the current number to the next number
+      } else if (prevIndex !== -1 && prevIndex === 0) {
         connectPoints(
-          r * Math.sin(theta[fromIndex]),
-          r * Math.cos(theta[fromIndex]),
-          r * Math.sin(theta[toIndex]),
-          r * Math.cos(theta[toIndex])
+          0,
+          0,
+          r * Math.sin(theta[currentIndex]),
+          r * Math.cos(theta[currentIndex])
+        );
+      } else if (prevIndex !== -1) {
+        connectPoints(
+          r * Math.sin(theta[prevIndex]),
+          r * Math.cos(theta[prevIndex]),
+          r * Math.sin(theta[currentIndex]),
+          r * Math.cos(theta[currentIndex])
         );
       }
+      prevIndex = currentIndex;
     }
   }
 
