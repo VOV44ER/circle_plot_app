@@ -45,6 +45,7 @@ const convertToNumbers = (name) => {
 
 export default function Home() {
   const { control, handleSubmit } = useForm();
+  const [canvasImageUrl, setCanvasImageUrl] = useState(null);
 
   function drawCirclePilot() {
     clearCanvas();
@@ -63,6 +64,13 @@ export default function Home() {
     // Plot circle
     drawCircle(r);
   }
+
+  const handleDownload = () => {
+    const link = document.createElement("a");
+    link.download = "circle_plot.png";
+    link.href = canvasImageUrl;
+    link.click();
+  };
 
   useEffect(() => {
     drawCirclePilot();
@@ -166,11 +174,24 @@ export default function Home() {
       }
       prevIndex = currentIndex;
     }
+
+    const canvas = document.getElementById("circleCanvas");
+    const canvasImageUrl = canvas.toDataURL();
+    setCanvasImageUrl(canvasImageUrl);
   }
 
   return (
     <main className="flex flex-col w-screen px-5 h-screen justify-center items-center">
       <h1 className="text-3xl mb-5">Circle Plot</h1>
+      <Button
+        onClick={handleDownload}
+        className="text-white font-medium hover:bg-green-600 bg-green-500"
+        size="large"
+        variant="contained"
+        disabled={!canvasImageUrl}
+      >
+        Download
+      </Button>
       <div>
         <canvas id="circleCanvas" width="400" height="400"></canvas>
       </div>
