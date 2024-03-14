@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -44,19 +45,90 @@ const convertToNumbers = (name) => {
 export default function Home() {
   const { control, handleSubmit } = useForm();
 
+  function clearCanvas() {
+    const canvas = document.getElementById("circleCanvas");
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  function drawCircle(radius) {
+    const canvas = document.getElementById("circleCanvas");
+    const ctx = canvas.getContext("2d");
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, canvas.height / 2, radius, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.stroke();
+  }
+
+  function plotPoints(x, y) {
+    const canvas = document.getElementById("circleCanvas");
+    const ctx = canvas.getContext("2d");
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2 + x, canvas.height / 2 - y, 3, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function connectPoints(x1, y1, x2, y2) {
+    const canvas = document.getElementById("circleCanvas");
+    const ctx = canvas.getContext("2d");
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2 + x1, canvas.height / 2 - y1);
+    ctx.lineTo(canvas.width / 2 + x2, canvas.height / 2 - y2);
+    ctx.stroke();
+  }
+
+  function plotText(text, x, y) {
+    const canvas = document.getElementById("circleCanvas");
+    const ctx = canvas.getContext("2d");
+    ctx.fillText(text, canvas.width / 2 + x, canvas.height / 2 - y);
+  }
+
   const onSubmit = (data) => {
     const dateOfBirth = new Date(data.dateOfBirth);
-
     const year = dateOfBirth.getFullYear();
     const month = dateOfBirth.getMonth() + 1;
     const day = dateOfBirth.getDate();
-
     const simpleDateOfBirth = `${day}${month}${year}`;
-
     const name = convertToNumbers(data.fullName);
-
-    console.log(name + simpleDateOfBirth);
+    drawCirclePlot(name + simpleDateOfBirth);
   };
+
+  function drawCirclePlot(order) {
+    clearCanvas();
+
+    const r = 150; // Radius
+    const degs = [40, 80, 120, 160, 200, 240, 280, 320, 360]; // Degrees for labeling
+    const theta = degs.map((deg) => (2 * Math.PI * deg) / 360); // Convert degrees to radians
+
+    // Plot points
+    theta.forEach((angle) => {
+      const x = r * Math.sin(angle);
+      const y = r * Math.cos(angle);
+      plotPoints(x, y);
+    });
+
+    // Plot circle
+    drawCircle(r);
+
+    // Plot lines between numbers based on the provided order
+    for (let i = 0; i < order.length - 1; i++) {
+      const fromIndex = parseInt(order[i]) - 1;
+      const toIndex = parseInt(order[i + 1]) - 1;
+      connectPoints(
+        r * Math.sin(theta[fromIndex]),
+        r * Math.cos(theta[fromIndex]),
+        r * Math.sin(theta[toIndex]),
+        r * Math.cos(theta[toIndex])
+      );
+    }
+
+    // Plot text
+    plotText("9", 0, r + 15);
+    for (let i = 0; i < 8; i++) {
+      plotText(i + 1, r * Math.sin(theta[i]) + 5, r * Math.cos(theta[i]) + 15);
+    }
+  }
 
   return (
     <main className="flex flex-col w-screen px-5 h-screen justify-center items-center">
