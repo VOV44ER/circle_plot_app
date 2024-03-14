@@ -115,18 +115,32 @@ export default function Home() {
     for (let i = 0; i < order.length - 1; i++) {
       const fromIndex = parseInt(order[i]) - 1;
       const toIndex = parseInt(order[i + 1]) - 1;
-      connectPoints(
-        r * Math.sin(theta[fromIndex]),
-        r * Math.cos(theta[fromIndex]),
-        r * Math.sin(theta[toIndex]),
-        r * Math.cos(theta[toIndex])
-      );
-    }
 
-    // Plot text
-    plotText("9", 0, r + 15);
-    for (let i = 0; i < 8; i++) {
-      plotText(i + 1, r * Math.sin(theta[i]) + 5, r * Math.cos(theta[i]) + 15);
+      if (order[i] === "0") {
+        // If the current number is zero, connect it to the center
+        connectPoints(
+          0,
+          0,
+          r * Math.sin(theta[toIndex]),
+          r * Math.cos(theta[toIndex])
+        );
+      } else if (order[i] === "2" && order[i + 1] === "0") {
+        // If the current number is 2 and the next number is zero
+        connectPoints(
+          r * Math.sin(theta[fromIndex]),
+          r * Math.cos(theta[fromIndex]),
+          0,
+          0
+        );
+      } else {
+        // Otherwise, connect the current number to the next number
+        connectPoints(
+          r * Math.sin(theta[fromIndex]),
+          r * Math.cos(theta[fromIndex]),
+          r * Math.sin(theta[toIndex]),
+          r * Math.cos(theta[toIndex])
+        );
+      }
     }
   }
 
