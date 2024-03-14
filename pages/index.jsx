@@ -3,6 +3,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import { useForm, Controller } from "react-hook-form";
+import { toast } from "react-hot-toast";
 
 const convertToNumbers = (name) => {
   const mapping = {
@@ -78,13 +79,13 @@ export default function Home() {
     ctx.stroke();
   }
 
-  function plotText(text, x, y) {
-    const canvas = document.getElementById("circleCanvas");
-    const ctx = canvas.getContext("2d");
-    ctx.fillText(text, canvas.width / 2 + x, canvas.height / 2 - y);
-  }
-
   const onSubmit = (data) => {
+    if (!data?.dateOfBirth || data?.fullName.trim()?.length <= 0) {
+      toast.error(
+        `Please enter both your full name and date of birth in the respective fields.`
+      );
+      return;
+    }
     const dateOfBirth = new Date(data.dateOfBirth);
     const year = dateOfBirth.getFullYear();
     const month = dateOfBirth.getMonth() + 1;
