@@ -43,64 +43,55 @@ const convertToNumbers = (name) => {
   return numbers;
 };
 
-export default function Home() {
+export default function CirclePlot() {
   const { control, handleSubmit } = useForm();
-  const [canvasImageUrl, setCanvasImageUrl] = useState(null);
-
-  function drawCirclePilot() {
-    clearCanvas();
-
-    const r = 150; // Radius
-    const degs = [0, 40, 80, 120, 160, 200, 240, 280, 320, 360]; // Degrees for labeling
-    const theta = degs.map((deg) => (2 * Math.PI * deg) / 360); // Convert degrees to radians
-
-    // Plot circle
-    drawCircle(r);
-  }
-
-  const handleDownload = () => {
-    const link = document.createElement("a");
-    link.download = "circle_plot.png";
-    link.href = canvasImageUrl;
-    link.click();
-  };
+  const [svgImage, setSvgImage] = useState(null);
 
   useEffect(() => {
-    drawCirclePilot();
+    drawCirclePlot(""); // Initial render without lines
   }, []);
 
-  function clearCanvas() {
-    const canvas = document.getElementById("circleCanvas");
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }
+  const drawCirclePlot = (order) => {
+    const r = 150; // Radius
+    const theta = [0, 40, 80, 120, 160, 200, 240, 280, 320, 360].map(
+      (deg) => (2 * Math.PI * deg) / 360
+    ); // Convert degrees to radians
 
-  function drawCircle(radius) {
-    const canvas = document.getElementById("circleCanvas");
-    const ctx = canvas.getContext("2d");
-    ctx.beginPath();
-    ctx.arc(canvas.width / 2, canvas.height / 2, radius, 0, Math.PI * 2);
-    ctx.closePath();
-    ctx.stroke();
-  }
+    let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">`;
+    // Plot circle
+    svgContent += `<circle cx="200" cy="200" r="${r}" fill="none" stroke="black" stroke-width="2"/>`;
 
-  function plotPoints(x, y) {
-    const canvas = document.getElementById("circleCanvas");
-    const ctx = canvas.getContext("2d");
-    ctx.beginPath();
-    ctx.arc(canvas.width / 2 + x, canvas.height / 2 - y, 3, 0, Math.PI * 2);
-    ctx.closePath();
-    ctx.fill();
-  }
+    // Plot lines between numbers based on the provided order
+    let prevIndex = -1;
+    for (let i = 0; i < order.length; i++) {
+      const currentIndex = parseInt(order[i]);
+      if (currentIndex === parseInt(order[i - 1])) {
+        continue;
+      }
+      if (currentIndex === 0) {
+        // Draw line from previous point to center
+        svgContent += `<line x1="${200 + r * Math.sin(theta[prevIndex])}" y1="${
+          200 - r * Math.cos(theta[prevIndex])
+        }" x2="${200}" y2="${200}" stroke="black" stroke-width="2"/>`;
+      } else if (prevIndex !== -1 && prevIndex === 0) {
+        svgContent += `<line x1="${200}" y1="${200}" x2="${
+          200 + r * Math.sin(theta[currentIndex])
+        }" y2="${
+          200 - r * Math.cos(theta[currentIndex])
+        }" stroke="black" stroke-width="2"/>`;
+      } else if (prevIndex !== -1) {
+        svgContent += `<line x1="${200 + r * Math.sin(theta[prevIndex])}" y1="${
+          200 - r * Math.cos(theta[prevIndex])
+        }" x2="${200 + r * Math.sin(theta[currentIndex])}" y2="${
+          200 - r * Math.cos(theta[currentIndex])
+        }" stroke="black" stroke-width="2"/>`;
+      }
+      prevIndex = currentIndex;
+    }
 
-  function connectPoints(x1, y1, x2, y2) {
-    const canvas = document.getElementById("circleCanvas");
-    const ctx = canvas.getContext("2d");
-    ctx.beginPath();
-    ctx.moveTo(canvas.width / 2 + x1, canvas.height / 2 - y1);
-    ctx.lineTo(canvas.width / 2 + x2, canvas.height / 2 - y2);
-    ctx.stroke();
-  }
+    svgContent += `</svg>`;
+    setSvgImage(`data:image/svg+xml;base64,${btoa(svgContent)}`);
+  };
 
   const onSubmit = (data) => {
     if (!data?.dateOfBirth || data?.fullName.trim()?.length <= 0) {
@@ -118,69 +109,24 @@ export default function Home() {
     drawCirclePlot(name + simpleDateOfBirth);
   };
 
-  function drawCirclePlot(order) {
-    clearCanvas();
-
-    const r = 150; // Radius
-    const degs = [0, 40, 80, 120, 160, 200, 240, 280, 320, 360]; // Degrees for labeling
-    const theta = degs.map((deg) => (2 * Math.PI * deg) / 360); // Convert degrees to radians
-
-    // Plot circle
-    drawCircle(r);
-
-    // Plot lines between numbers based on the provided order
-    let prevIndex = -1;
-    for (let i = 0; i < order.length; i++) {
-      const currentIndex = parseInt(order[i]);
-      if (currentIndex === parseInt(order[i - 1])) {
-        continue;
-      }
-      if (currentIndex === 0) {
-        // Draw line from previous point to center
-        connectPoints(
-          r * Math.sin(theta[prevIndex]),
-          r * Math.cos(theta[prevIndex]),
-          0,
-          0
-        );
-      } else if (prevIndex !== -1 && prevIndex === 0) {
-        connectPoints(
-          0,
-          0,
-          r * Math.sin(theta[currentIndex]),
-          r * Math.cos(theta[currentIndex])
-        );
-      } else if (prevIndex !== -1) {
-        connectPoints(
-          r * Math.sin(theta[prevIndex]),
-          r * Math.cos(theta[prevIndex]),
-          r * Math.sin(theta[currentIndex]),
-          r * Math.cos(theta[currentIndex])
-        );
-      }
-      prevIndex = currentIndex;
-    }
-
-    const canvas = document.getElementById("circleCanvas");
-    const canvasImageUrl = canvas.toDataURL();
-    setCanvasImageUrl(canvasImageUrl);
-  }
-
   return (
     <main className="flex flex-col w-screen px-5 h-screen justify-center items-center">
       <h1 className="text-3xl mb-5">Circle Plot</h1>
       <Button
-        onClick={handleDownload}
+        onClick={() => {
+          const link = document.createElement("a");
+          link.download = "circle_plot.svg";
+          link.href = svgImage;
+          link.click();
+        }}
         className="text-white font-medium hover:bg-green-600 bg-green-500"
         size="large"
         variant="contained"
-        disabled={!canvasImageUrl}
+        disabled={!svgImage}
       >
         Download
       </Button>
-      <div>
-        <canvas id="circleCanvas" width="400" height="400"></canvas>
-      </div>
+      <div>{svgImage && <img src={svgImage} alt="Circle Plot" />}</div>
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col gap-3 justify-center items-center"
