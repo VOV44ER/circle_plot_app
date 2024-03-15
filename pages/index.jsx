@@ -54,13 +54,6 @@ export default function Home() {
     const degs = [0, 40, 80, 120, 160, 200, 240, 280, 320, 360]; // Degrees for labeling
     const theta = degs.map((deg) => (2 * Math.PI * deg) / 360); // Convert degrees to radians
 
-    // Plot points
-    theta.forEach((angle) => {
-      const x = r * Math.sin(angle);
-      const y = r * Math.cos(angle);
-      plotPoints(x, y);
-    });
-
     // Plot circle
     drawCircle(r);
   }
@@ -131,13 +124,6 @@ export default function Home() {
     const r = 150; // Radius
     const degs = [0, 40, 80, 120, 160, 200, 240, 280, 320, 360]; // Degrees for labeling
     const theta = degs.map((deg) => (2 * Math.PI * deg) / 360); // Convert degrees to radians
-
-    // Plot points
-    theta.forEach((angle) => {
-      const x = r * Math.sin(angle);
-      const y = r * Math.cos(angle);
-      plotPoints(x, y);
-    });
 
     // Plot circle
     drawCircle(r);
